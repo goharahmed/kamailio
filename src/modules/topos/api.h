@@ -62,6 +62,7 @@ typedef int (*tps_set_storage_api_f)(tps_storage_api_t *tsa);
 int tps_set_storage_api(tps_storage_api_t *tsa);
 
 typedef int (*tps_get_dialog_expire_f)(void);
+typedef int (*tps_get_dialog_expiry_renew_f)(void);
 typedef int (*tps_get_branch_expire_f)(void);
 
 /**
@@ -70,6 +71,7 @@ typedef int (*tps_get_branch_expire_f)(void);
 typedef struct topos_api {
 	tps_set_storage_api_f set_storage_api;
 	tps_get_dialog_expire_f get_dialog_expire;
+	tps_get_dialog_expiry_renew_f  get_dialog_renew_expiry;
 	tps_get_branch_expire_f get_branch_expire;
 } topos_api_t;
 

@@ -66,6 +66,7 @@ static gen_lock_set_t *_tps_storage_lock_set = NULL;
 
 int _tps_branch_expire = 180;
 int _tps_dialog_expire = 10800;
+int _tps_renew_dialog_expiry = 0;
 
 int tps_db_insert_dialog(tps_data_t *td);
 int tps_db_clean_dialogs(void);

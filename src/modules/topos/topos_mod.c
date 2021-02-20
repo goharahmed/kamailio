@@ -83,6 +83,7 @@ str _tps_storage = str_init("db");
 
 extern int _tps_branch_expire;
 extern int _tps_dialog_expire;
+extern int _tps_renew_dialog_expiry;
 
 int _tps_clean_interval = 60;
 
@@ -143,6 +144,7 @@ static param_export_t params[]={
 	{"a_contact_avp",	PARAM_STR, &_tps_acontact_avp},
 	{"b_contact_avp",	PARAM_STR, &_tps_bcontact_avp},
 	{"rr_update",       PARAM_INT, &_tps_rr_update},
+	{"renew_dialog_expiry", PARAM_INT, &_tps_renew_dialog_expiry},
 	{0,0,0}
 };
 
@@ -507,6 +509,14 @@ int tps_get_dialog_expire(void)
 /**
  *
  */
+int tps_get_dialog_expiry_renew(void)
+{
+	return _tps_renew_dialog_expiry;
+}
+
+/**
+ *
+ */
 int tps_get_branch_expire(void)
 {
 	return _tps_branch_expire;
@@ -599,6 +609,7 @@ int bind_topos(topos_api_t *api)
 	memset(api, 0, sizeof(topos_api_t));
 	api->set_storage_api = tps_set_storage_api;
 	api->get_dialog_expire = tps_get_dialog_expire;
+	api->get_dialog_renew_expiry = tps_get_dialog_expiry_renew;
 	api->get_branch_expire = tps_get_branch_expire;
 
 	return 0;
