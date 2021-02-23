@@ -912,6 +912,8 @@ int tps_redis_load_dialog(sip_msg_t *msg, tps_data_t *md, tps_data_t *sd)
 	redisReply *rrpl = NULL;
 	str skey = STR_NULL;
 	str sval = STR_NULL;
+	unsigned long lval = 0;
+	str rval = STR_NULL;
 
 	if(msg==NULL || md==NULL || sd==NULL)
 		return -1;
@@ -1094,6 +1096,40 @@ int tps_redis_load_dialog(sip_msg_t *msg, tps_data_t *md, tps_data_t *sd)
 	}
 
 	freeReplyObject(rrpl);
+	/* Check if dialog TTL should be updated as well */
+    lval = (unsigned long)_tps_api.get_dialog_renew_expiry;
+    if(lval==0) {
+        return 0;
+    }
+    /* set expire for the key */
+    argc = 0;
+
+    argv[argc]    = "EXPIRE";
+    argvlen[argc] = 6;
+    argc++;
+
+    argv[argc]    = rkey.s;
+    argvlen[argc] = rkey.len;
+    argc++;
+
+    lval = (unsigned long)_tps_api.get_dialog_expire();
+    if(lval==0) {
+       return 0;
+    }
+    TPS_REDIS_SET_ARGNV(lval, rp, &rval, argc, argv, argvlen);
+
+    rrpl = _tps_redis_api.exec_argv(rsrv, argc, (const char **)argv, argvlen);
+    if(rrpl==NULL) {
+        LM_ERR("failed to execute expire redis command\n");
+            if(rsrv->ctxRedis->err) {
+                LM_ERR("redis error: %s\n", rsrv->ctxRedis->errstr);
+        }
+        return -1;
+    }
+    LM_DBG("expire %lu set on dialog record for [%.*s] with argc %d\n", lval,
+           rkey.len, rkey.s, argc);
+    freeReplyObject(rrpl);
+
 	return 0;
 
 error:
@@ -1209,6 +1245,7 @@ int tps_redis_update_dialog(sip_msg_t *msg, tps_data_t *md, tps_data_t *sd,
 	redisc_server_t *rsrv = NULL;
 	redisReply *rrpl = NULL;
 	int32_t liflags;
+	unsigned long lval = 0;
 
 	if(sd->a_uuid.len<=0 && sd->b_uuid.len<=0) {
 		LM_INFO("no uuid for this message\n");
@@ -1312,6 +1349,39 @@ int tps_redis_update_dialog(sip_msg_t *msg, tps_data_t *md, tps_data_t *sd,
 	LM_DBG("updated dialog record for [%.*s] with argc %d\n",
 			rkey.len, rkey.s, argc);
 	freeReplyObject(rrpl);
+	/* Check if dialog TTL should be updated as well */
+    lval = (unsigned long)_tps_api.get_dialog_renew_expiry;
+    if(lval==0) {
+        return 0;
+    }
+    /* set expire for the key */
+    argc = 0;
+
+    argv[argc]    = "EXPIRE";
+    argvlen[argc] = 6;
+    argc++;
+
+    argv[argc]    = rkey.s;
+    argvlen[argc] = rkey.len;
+    argc++;
+
+    lval = (unsigned long)_tps_api.get_dialog_expire();
+    if(lval==0) {
+       return 0;
+    }
+    TPS_REDIS_SET_ARGNV(lval, rp, &rval, argc, argv, argvlen);
+
+    rrpl = _tps_redis_api.exec_argv(rsrv, argc, (const char **)argv, argvlen);
+    if(rrpl==NULL) {
+        LM_ERR("failed to execute expire redis command\n");
+            if(rsrv->ctxRedis->err) {
+                LM_ERR("redis error: %s\n", rsrv->ctxRedis->errstr);
+        }
+        return -1;
+    }
+    LM_DBG("expire %lu set on dialog record for [%.*s] with argc %d\n", lval,
+           rkey.len, rkey.s, argc);
+    freeReplyObject(rrpl);
 
 	return 0;
 }
